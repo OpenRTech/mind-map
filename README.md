@@ -31,4 +31,4 @@ FIXME: listing of options this app accepts.
 
 ## License
 
-FIXME: License
+Distributed under the WTFPL License.
