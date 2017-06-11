@@ -4,18 +4,18 @@
             [org.httpkit.server :refer [run-server]]
             [compojure.core :refer :all]
             [compojure.route :as route]))
-;;(:require [compojure.core :refer :all]
             ;;[ring.middleware.json :as middleware]
-            ;;[Compojure.route :as route]
 ;;            [clojure.data.json :as json])
 
 (defroutes maind-map-server
 (GET "/hello" [] "Hello World")
-;;(POST "/updateNode" {body :body} 
-;;           (
-;;            json-response (slurp body)
-;;           )
-;;)
+(POST "/updateNode" {body :body} 
+           (
+            ;;            json-response (slurp body)
+            ;;json/read-str 
+            str (slurp body);;"Ololo"
+           )
+)
 (route/resources "/"))
      
   (defn -main
