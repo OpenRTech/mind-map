@@ -9,6 +9,7 @@
                  [org.jsoup/jsoup "1.8.3"]
                  [http-kit "2.2.0"]
                  [ring/ring-core "1.6.0"]
+                 [compojure "1.6.0"]
                  [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
                                                  javax.jms/jms
                                                  com.sun.jmdk/jmxtools
