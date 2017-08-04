@@ -3,25 +3,25 @@
   (:require [clojure.tools.logging :as log]
             [org.httpkit.server :refer [run-server]]
             [compojure.core :refer :all]
-            [compojure.route :as route]))
-            ;;[ring.middleware.json :as middleware]
-;;            [clojure.data.json :as json])
+            [compojure.route :as route]
+            [ring.util.response :as resp]
+            ;[ring.middleware.json :as middleware]
+            [clojure.data.json :as json]))
 
 (defroutes maind-map-server
-(GET "/hello" [] "Hello World")
-(POST "/updateNode" {body :body} 
-           (
-            ;;            json-response (slurp body)
-            ;;json/read-str 
-            str (slurp body);;"Ololo"
-           )
-)
-(route/resources "/"))
+  (GET "/" [] (resp/resource-response "MindMap.html" {:root "public"}))
+  (GET "/hello" [] "Hello World")
+  (POST "/updateNode" {body :body} 
+           (let [input (json/read-str (str (slurp body)))]
+           (str input)) )
+  (route/resources "/")
+  (route/not-found "(404) <b>Page not found</b>"))
      
   (defn -main
-  "I don't do a whole lot ... yet."
+  "MAIN CODE"
     [& args]
-  (println "Hello, World test!")
-  (log/error "test error logging!")
+  (println "Prepare server")
+  (log/trace "Prepare server")
   (run-server maind-map-server {:port 8080})
-  (println "Hello, World!"))
+  (log/trace "run-server!")
+  (println "run-server!"))

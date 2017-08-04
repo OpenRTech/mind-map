@@ -16,6 +16,7 @@
 		var WIDTH_PROGRESS_LINE_INDENT = 5;
 
 		var GRootNode = {
+							"id":1,
 							"x":200, 
 							"y":100, 
 							"progress":0, 
@@ -168,6 +169,7 @@
 			function updateNodeButtonClick() 
 			{
 				if (GCurrentNode===null){return};
+				GCurrentNode.id = 1;
 				GCurrentNode.name = document.getElementById("name").value;
 				GCurrentNode.isComment = document.getElementById("isComment").value;
 				GCurrentNode.progress = document.getElementById("progress").value;
@@ -187,6 +189,7 @@
 			function deleteNodeButtonClick() 
 			{
 				if (GCurrentNode===null){return};
+				GCurrentNode.id = 1;
 				GCurrentNode.name = document.getElementById("name").value;
 				GCurrentNode.isComment = document.getElementById("isComment").value;
 				GCurrentNode.progress = document.getElementById("progress").value;
@@ -208,6 +211,7 @@
 		function init() 
 		{
 			GRootNode = {
+						"id":1,
 						"x":100, 
 						"y":100, 
 						"progress":99, 
@@ -216,6 +220,7 @@
 						"comment":"hello",
 					 	"nodes":[
 							 {
+								"id":2,
 								"x":250, 
 								"y":100, 
 								"progress":90, 
@@ -225,6 +230,7 @@
 							 	"nodes":[]
 						 	},
 						 	{
+								"id":3,
 								"x":250, 
 								"y":200, 
 								"progress":30, 

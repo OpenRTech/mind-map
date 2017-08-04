@@ -7,6 +7,7 @@
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/java.jdbc "0.7.0-alpha1"]
                  [org.jsoup/jsoup "1.8.3"]
+                 [org.clojure/data.json "0.2.6"]
                  [http-kit "2.2.0"]
                  [ring/ring-core "1.6.0"]
                  [compojure "1.6.0"]
