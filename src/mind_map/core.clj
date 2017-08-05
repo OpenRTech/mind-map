@@ -33,18 +33,16 @@
    (System/exit 0)
    ""))
 
-(comment
-
-(defn map-assoc-kv [keyf valuef dictionary] (reduce (fn [a kv] (assoc a (keyf (first kv)) (valuef (second kv)))) {} dictionary))
-
-(defn to-colon-assoc [dictionary] (map-assoc-kv keyword identity dictionary))
-  )
-
 (def dbConnection
   (delay (json/read-str (str (slurp (io/resource "settings/DbConnection.json" ))) :key-fn keyword)))
 
 (defn update-node [body]
-  (let [input (json/read-str (str (slurp body)))]
+  (let [input (json/read-str (str (slurp body)) :key-fn keyword)]
+           (str input))
+  )
+
+(defn get-tree [body]
+  (let [input (json/read-str (str (slurp body)) :key-fn keyword)]
            (str input))
   )
 
@@ -52,9 +50,10 @@
   (GET "/" [] (resp/resource-response "MindMap.html" {:root "public"}))
   (GET "/ping" [] "<b>Pong!</b>")
   (GET "/forceShutdown" [] (force-shutdown))
-  (POST "/updateNode" {body :body} (update-node body))
+  (POST "/updateNode" {body :body} (update-node body));;to three arrays of nodes
+  (POST "/getTree" {body :body} (get-tree body))
   (route/resources "/")
-  (route/not-found "(404) <b>Page not found</b>"))
+  (route/not-found "(404) Page not found"))
 
   (defn -main
   "MAIN CODE"

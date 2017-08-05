@@ -12,13 +12,13 @@
 
 */
 
-todo: add foreigner keys
+--to do: all unessential data to open key value
 
 create table "Nodes"
 (
-	"id" SERIAL primary key not null,
+	"id" varchar(255) primary key not null,
 	"name" varchar(255) not null default (''),
-	"comment" varchar(255) not null default (''),
+	"comment" varchar(4096) not null default (''),
 	"isComment" boolean not null default (true),
 	"progress" int not null default (0),
 	"x" int not null default (0),
@@ -29,10 +29,16 @@ create table "Nodes"
 create table "Links"
 (
 	"idLink" SERIAL primary key not null,
-	"node" int not null,
-	"subnode" int not null,
+	"node" varchar(255) not null,
+	"subnode" varchar(255) not null,
 	"linkType" int not null default (0)
 );
+
+ALTER TABLE "Links" ADD CONSTRAINT "FK_Links_subnode_Nodes"
+	FOREIGN KEY ("subnode") REFERENCES "Nodes";
+	
+ALTER TABLE "Links" ADD CONSTRAINT "FK_Links_node_Nodes"
+	FOREIGN KEY ("node") REFERENCES "Nodes";
 
 --create table "Users"
 
