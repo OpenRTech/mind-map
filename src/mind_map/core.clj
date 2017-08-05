@@ -33,14 +33,16 @@
    (System/exit 0)
    ""))
 
-(defn name-to-colon-symbol [name] (symbol (str ":" name)))
+(comment
+  (defn name-to-colon-symbol [name] (symbol (str ":" name)))
 
 (defn map-assoc-kv [keyf valuef dictionary] (reduce (fn [a kv] (assoc a (keyf (first kv)) (valuef (second kv)))) {} dictionary))
 
 (defn to-colon-assoc [dictionary] (map-assoc-kv name-to-colon-symbol identity dictionary))
+  )
 
 (def dbConnection
-  (delay (to-colon-assoc (json/read-str (str (slurp (io/resource "settings/DbConnection.json" )))))))
+  (delay (json/read-str (str (slurp (io/resource "settings/DbConnection.json" ))) :key-fn keyword)))
 
 (defn update-node [body]
   (let [input (json/read-str (str (slurp body)))]
