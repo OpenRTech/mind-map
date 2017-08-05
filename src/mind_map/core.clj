@@ -7,7 +7,9 @@
             [ring.util.response :as resp]
             ;[ring.middleware.json :as middleware]
             [clojure.data.json :as json]
-            [clojure.repl :as repl]))
+            [clojure.repl :as repl]
+            [clojure.java.io :as io]
+            [clojure.java.jdbc :as cjdb]))
 
 (defonce serverThread (atom nil))
 
@@ -30,6 +32,15 @@
    (async-stop-server)
    (System/exit 0)
    ""))
+
+(defn name-to-colon-symbol [name] (symbol (str ":" name)))
+
+(defn map-assoc-kv [keyf valuef dictionary] (reduce (fn [a kv] (assoc a (keyf (first kv)) (valuef (second kv)))) {} dictionary))
+
+(defn to-colon-assoc [dictionary] (map-assoc-kv name-to-colon-symbol identity dictionary))
+
+(def dbConnection
+  (delay (to-colon-assoc (json/read-str (str (slurp (io/resource "settings/DbConnection.json" )))))))
 
 (defn update-node [body]
   (let [input (json/read-str (str (slurp body)))]

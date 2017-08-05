@@ -1,0 +1,8 @@
+{
+	"dbtype":"postgresql",
+	"dbname":"mindMap",
+	"host":"localhost",
+	"user":"postgres",
+	"password":"postgres",
+	"sslfactory":"org.postgresql.ssl.NonValidatingFactory"
+}
