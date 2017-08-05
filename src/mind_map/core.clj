@@ -34,11 +34,10 @@
    ""))
 
 (comment
-  (defn name-to-colon-symbol [name] (symbol (str ":" name)))
 
 (defn map-assoc-kv [keyf valuef dictionary] (reduce (fn [a kv] (assoc a (keyf (first kv)) (valuef (second kv)))) {} dictionary))
 
-(defn to-colon-assoc [dictionary] (map-assoc-kv name-to-colon-symbol identity dictionary))
+(defn to-colon-assoc [dictionary] (map-assoc-kv keyword identity dictionary))
   )
 
 (def dbConnection
