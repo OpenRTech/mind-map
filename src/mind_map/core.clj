@@ -36,15 +36,39 @@
 (def dbConnection
   (delay (json/read-str (str (slurp (io/resource "settings/DbConnection.json" ))) :key-fn keyword)))
 
+(def dbTransactionSettings
+  {:isolation :serializable :read-only? true})
+(def dbTransactionWriteSettings
+  {:isolation :serializable :read-only? false})
+
+(defn update-or-insert!
+  "Updates columns or inserts a new row in the specified table"
+  [trans-conn table row where-clause]
+    (let [result (cjdb/update! trans-conn table row where-clause)]
+      (if (zero? (first result))
+        (cjdb/insert! trans-conn table row)
+        result)))
+
 (defn update-node [body]
   (let [input (json/read-str (str (slurp body)) :key-fn keyword)]
            (str input))
   )
 
+(defn get-node-parent [trans-conn id]
+  (second (first (cjdb/query trans-conn ["select \"idNode\" from \"Links\" where id= ? limit 1" id]))))
+
+(defn get-tree-top [trans-conn]
+  (let [anyNodeId (second (first (cjdb/query trans-conn ["select \"id\" from \"Nodes\" limit 1"])))]
+    (if anyNodeId
+      (take-last 1 (take-while some? (iterate (partial get-node-parent trans-conn) anyNodeId)))
+      nil)))
+
 (defn get-tree [body]
-  (let [input (json/read-str (str (slurp body)) :key-fn keyword)]
-           (str input))
-  )
+  (cjdb/with-db-transaction [trans-conn @dbTransaction dbTransactionSettings]
+    (let [topNode (get-tree-top [trans-conn])]
+      (if topNode
+        "to-do"
+      "[]"))))
 
 (defroutes mind-map-server
   (GET "/" [] (resp/resource-response "MindMap.html" {:root "public"}))
