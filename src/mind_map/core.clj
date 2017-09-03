@@ -55,19 +55,29 @@
   )
 
 (defn get-node-parent [trans-conn id]
-  (second (first (cjdb/query trans-conn ["select \"idNode\" from \"Links\" where id= ? limit 1" id]))))
+  (:idnode (first (cjdb/query trans-conn ["select \"idNode\" from \"Links\" where \"idSubnode\"= ? limit 1" id]))))
 
 (defn get-tree-top [trans-conn]
-  (let [anyNodeId (second (first (cjdb/query trans-conn ["select \"id\" from \"Nodes\" limit 1"])))]
+  (let [anyNodeId (:id (first (cjdb/query trans-conn ["select \"id\" from \"Nodes\" limit 1"])))]
     (if anyNodeId
-      (take-last 1 (take-while some? (iterate (partial get-node-parent trans-conn) anyNodeId)))
+      (first (take-last 1 (take-while some? (iterate (partial get-node-parent trans-conn) anyNodeId))))
       nil)))
 
+(defn kv-explicit-to-kv-implicit [m]
+  (for [v m] {(:key v) (:value v)}))
+
+(defn make-tree [trans-conn currentNode]
+  (let [keyValues (doall (cjdb/query trans-conn ["select \"key\", \"value\" from \"KeyValueNodeData\" where \"idNode\"= ?" currentNode]))]
+    (let [subNodes (doall (cjdb/query trans-conn ["select \"idSubnode\" from \"Links\" where \"idNode\"= ?" currentNode]))]
+      (let [dictionaredKeyValues (into {}(kv-explicit-to-kv-implicit keyValues))]
+        (let [dictionaredsSubNodes (doall (for [subNode subNodes] (make-tree trans-conn subNode)))]
+          (into dictionaredKeyValues {:Nodes dictionaredsSubNodes}))))))
+
 (defn get-tree [body]
-  (cjdb/with-db-transaction [trans-conn @dbTransaction dbTransactionSettings]
+  (cjdb/with-db-transaction [trans-conn @dbConnection dbTransactionSettings]
     (let [topNode (get-tree-top [trans-conn])]
       (if topNode
-        "to-do"
+        (json/write-str (make-tree trans-conn topNode) )
       "[]"))))
 
 (defroutes mind-map-server

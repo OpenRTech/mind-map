@@ -27,7 +27,7 @@ create table "KeyValueNodeData"
 (
 	"idData" SERIAL primary key not null,
 	"idNode" varchar(255) not null REFERENCES "Nodes",
-	"key" varchar(256) not null default (''),
+	"key" varchar(256) not null,
 	"value" varchar(4096) not null default ('')
 );
 
