@@ -49,10 +49,27 @@
         (cjdb/insert! trans-conn table row)
         result)))
 
+(defn answer-wrap [answerBodyMaker]
+  (try
+    (let [answerBody (answerBodyMaker)]
+      {:ErrorCode 200, :ErrorDescription "OK", :Answer answerBody})
+  (catch Exception e
+    {:ErrorCode 100500, :ErrorDescription (.getMessage e), :StackTrace (map str (.getStackTrace e))}))
+
+(defn make-answer [answerBodyMaker]
+  (json/write-str (answer-wrap answerBodyMaker)))
+
+(defn update-tree-dictionary [updaterDictionary]
+  updaterDictionary)
+
+(defn update-tree-json [jsonStr]
+  (let [input (json/read-str jsonStr :key-fn keyword)]
+    (update-tree-dictionary input)))
+
 (defn update-node [body]
-  (let [input (json/read-str (str (slurp body)) :key-fn keyword)]
-           (str input))
-  )
+  (make-answer
+   (fn []
+     (update-tree-json (str (slurp body))))))
 
 (defn get-node-parent [trans-conn id]
   (:idnode (first (cjdb/query trans-conn ["select \"idNode\" from \"Links\" where \"idSubnode\"= ? limit 1" id]))))
@@ -74,11 +91,14 @@
           (into dictionaredKeyValues {:Nodes dictionaredsSubNodes}))))))
 
 (defn get-tree [body]
-  (cjdb/with-db-transaction [trans-conn @dbConnection dbTransactionSettings]
-    (let [topNode (get-tree-top [trans-conn])]
-      (if topNode
-        (json/write-str (make-tree trans-conn topNode) )
-      "[]"))))
+  (make-answer
+   (fn []
+     (let [input (json/read-str (str (slurp body)) :key-fn keyword)]
+       (cjdb/with-db-transaction [trans-conn @dbConnection dbTransactionSettings]
+         (let [topNode (get-tree-top [trans-conn])]
+           (if topNode
+             (make-tree trans-conn topNode)
+             "[]")))))))
 
 (defroutes mind-map-server
   (GET "/" [] (resp/resource-response "MindMap.html" {:root "public"}))
