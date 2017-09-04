@@ -54,7 +54,7 @@
     (let [answerBody (answerBodyMaker)]
       {:ErrorCode 200, :ErrorDescription "OK", :Answer answerBody})
   (catch Exception e
-    {:ErrorCode 100500, :ErrorDescription (.getMessage e), :StackTrace (map str (.getStackTrace e))}))
+    {:ErrorCode 100500, :ErrorDescription (.getMessage e), :StackTrace (map str (.getStackTrace e))})))
 
 (defn make-answer [answerBodyMaker]
   (json/write-str (answer-wrap answerBodyMaker)))
