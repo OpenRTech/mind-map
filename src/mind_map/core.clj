@@ -25,7 +25,7 @@
     (@serverThread :timeout 100)
     (async-stop-server)))
 
-(defn force-shutdown []
+(defn force-shutdown-handler []
   (
    (println "force-shutdown")
    (log/trace "force-shutdown")
@@ -59,14 +59,45 @@
 (defn make-answer [answerBodyMaker]
   (json/write-str (answer-wrap answerBodyMaker)))
 
+(defn delete-node-req [idNode trans-conn]
+  (let [subNodes (doall (cjdb/query trans-conn ["select \"idSubnode\" from \"Links\" where \"idNode\"= ?" idNode]))]
+    (for [subNode subNodes]
+      (do
+        (cjdb/delete! trans-conn :Links ["idNode = ?" idNode])
+        (delete-node-req (:idSubnode subNode) trans-conn)))
+    (cjdb/delete! trans-conn :KeyValueNodeData ["idNode = ?" idNode])
+    (cjdb/delete! trans-conn :Nodes ["id = ?" idNode])))
+
+(defn delete-node [idNode]
+  (cjdb/with-db-transaction [trans-conn @dbConnection dbTransactionWriteSettings]
+    (let [foundedNode (:idnode (first (cjdb/query trans-conn ["select \"id\" from \"Nodes\" where \"id\"= ? limit 1" idNode])))]
+      (if foundedNode
+        (do
+          (cjdb/delete! trans-conn :Links ["idSubnode = ?" idNode])
+          (delete-node-req idNode trans-conn))
+        (throw (ex-info (str "Not found node for delete: " idNode) {}))))))
+
+(defn add-node [item]
+  {})
+
+(defn update-node [item]
+  {})
+
+;move-node?
+
 (defn update-tree-dictionary [updaterDictionary]
-  updaterDictionary)
+  (let [data (:Data updaterDictionary)]
+    (for [item  data]
+      (case (:doing item)
+        "DeleteNode" (delete-node (:Id item))
+        "AddNode" (add-node item)
+        "UpdateNode" (update-node item)))))
 
 (defn update-tree-json [jsonStr]
   (let [input (json/read-str jsonStr :key-fn keyword)]
     (update-tree-dictionary input)))
 
-(defn update-node [body]
+(defn update-node-handler [body]
   (make-answer
    (fn []
      (update-tree-json (str (slurp body))))))
@@ -90,7 +121,7 @@
         (let [dictionaredsSubNodes (doall (for [subNode subNodes] (make-tree trans-conn subNode)))]
           (into dictionaredKeyValues {:Nodes dictionaredsSubNodes}))))))
 
-(defn get-tree [body]
+(defn get-tree-handler [body]
   (make-answer
    (fn []
      (let [input (json/read-str (str (slurp body)) :key-fn keyword)]
@@ -103,9 +134,9 @@
 (defroutes mind-map-server
   (GET "/" [] (resp/resource-response "MindMap.html" {:root "public"}))
   (GET "/ping" [] "<b>Pong!</b>")
-  (GET "/forceShutdown" [] (force-shutdown))
-  (POST "/updateNode" {body :body} (update-node body));;to three arrays of nodes
-  (POST "/getTree" {body :body} (get-tree body))
+  (GET "/forceShutdown" [] (force-shutdown-handler))
+  (POST "/updateNode" {body :body} (update-node-handler body));;to three arrays of nodes
+  (POST "/getTree" {body :body} (get-tree-handler body))
   (route/resources "/")
   (route/not-found "(404) Page not found"))
 
